@@ -1,6 +1,6 @@
 #include "humblenet_p2p.h"
 
-#ifdef EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #else
 #define EMSCRIPTEN_KEEPALIVE
@@ -155,7 +155,7 @@ void processMessage(PeerId peer, const char* buff, size_t length)
 
 // input helpers for desktop builds
 
-#ifndef EMSCRIPTEN
+#ifndef __EMSCRIPTEN__
 std::string toLower(const std::string& in)
 {
 	std::locale loc;
@@ -271,7 +271,7 @@ int main(int argc, char* argv[])
 	}
 	humblenet_p2p_init(peerServer.c_str(), "client_token", "client_secret", NULL);
 
-#ifdef EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
 	EM_ASM(
 		var canvasParent = Module.canvas.parentNode;
 		var wrap = document.createElement('div');

@@ -22,7 +22,7 @@
 	#include <sys/time.h>
 #endif
 
-#if defined(EMSCRIPTEN)
+#if defined(__EMSCRIPTEN__)
 	#include <emscripten/emscripten.h>
 #endif
 
@@ -578,7 +578,7 @@ ha_bool internal_p2p_register_protocol() {
 }
 
 
-#ifndef EMSCRIPTEN
+#ifndef __EMSCRIPTEN__
 extern "C" void poll_deinit();
 #endif
 
@@ -596,7 +596,7 @@ void HUMBLENET_CALL humblenet_shutdown() {
 
 	humblenet_p2p_shutdown();
 
-#ifndef EMSCRIPTEN
+#ifndef __EMSCRIPTEN__
 	poll_deinit();
 #endif
 
@@ -733,7 +733,7 @@ HUMBLENET_API const char* HUMBLENET_CALL humblenet_get_hint(const char* name) {
 		return NULL;
 }
 
-#ifndef EMSCRIPTEN
+#ifndef __EMSCRIPTEN__
 
 #include "libpoll.h"	// SKIP_AMALGAMATOR_INCLUDE
 
@@ -754,7 +754,7 @@ void humblenet_timer( timer_callback_t callback, int timeout, void* data)
 	poll_timeout( callback, timeout, data );
 }
 
-#else
+#else // __EMSCRIPTEN__
 
 void humblenet_lock() {
 }

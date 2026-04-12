@@ -1,6 +1,6 @@
 #include "humblenet_p2p.h"
 
-#ifdef EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #else
 #define EMSCRIPTEN_KEEPALIVE
@@ -146,7 +146,7 @@ void main_loop()
 				// we are connected
 				sendChat(startPeerId, "Hello World!");
 				startPeerStatus = PeerStatus::SENT;
-#ifdef EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
 				EM_ASM(
 					var button = document.getElementById('ChatButton');
 					if (button) {
@@ -199,7 +199,7 @@ int main(int argc, char *argv[])
 	// the 4th argument is for user authentication (future feature)
 	humblenet_p2p_init(HUMBLENET_SERVER_URL, client_token, client_secret, NULL);
 
-#ifdef EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
 	EM_ASM(
 		var canvasParent = Module.canvas.parentNode;
 		var wrap = document.createElement('div');

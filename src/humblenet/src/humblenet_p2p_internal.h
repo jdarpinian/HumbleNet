@@ -147,7 +147,7 @@ struct UnGuard {
 };
 
 
-#ifdef EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
     #define HUMBLENET_GUARD()
     #define HUMBLENET_UNGUARD()
 #else

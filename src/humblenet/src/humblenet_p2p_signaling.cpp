@@ -1,7 +1,7 @@
 #include "humblenet_p2p_internal.h"
 #include "humblenet_alias.h"
 
-#if defined(EMSCRIPTEN)
+#if defined(__EMSCRIPTEN__)
 	#include <emscripten/emscripten.h>
 #endif
 
@@ -140,7 +140,7 @@ namespace humblenet {
 				pinfo.append(", non-desktop architecture");
 				break;
 		}
-#elif defined(EMSCRIPTEN)
+#elif defined(__EMSCRIPTEN__)
 		char buff[512];
 		int len = EM_ASM_INT({
 			var buff = new Uint8Array(Module.HEAPU8.buffer, $0, $1);

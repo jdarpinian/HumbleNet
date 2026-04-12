@@ -1,4 +1,4 @@
-#if !defined(EMSCRIPTEN) && defined(HUMBLENET_LOAD_WEBRTC)
+#if !defined(__EMSCRIPTEN__) && defined(HUMBLENET_LOAD_WEBRTC)
 
 #include "libwebrtc.h"
 

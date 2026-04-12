@@ -6,7 +6,7 @@
 #include <cassert>
 #include <cstring>
 
-#ifdef EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
 #include "libwebsockets_asmjs.h"
 #else
 #include "libwebsockets_native.h"	// SKIP_AMALGAMATOR_INCLUDE
@@ -140,7 +140,7 @@ int websocket_protocol(  struct lws *wsi
 		}
 		break;
 
-#if !defined(EMSCRIPTEN)
+#if !defined(__EMSCRIPTEN__)
 		case LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS:
 		{
 			int i, count = 0;

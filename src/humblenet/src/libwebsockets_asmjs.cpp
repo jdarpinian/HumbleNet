@@ -1,4 +1,4 @@
-#ifdef EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
 
 #include "libwebsockets_asmjs.h"
 
@@ -94,18 +94,23 @@ struct lws_context* lws_create_context_extended( struct lws_context_creation_inf
 			stackRestore(stack);
 		};
 		libwebsocket.on_close = function() {
+			if (!this.user_data) return;
 			// closed //
 			libwebsocket.on_event( this.protocol_id, ctx, this.id, 4, this.user_data, 0, 0 );
 			this.destroy();
 		};
 		libwebsocket.on_error = function() {
+			if (!this.user_data) return;
 			// client connection error //
 			libwebsocket.on_event( this.protocol_id, ctx, this.id, 2, this.user_data, 0, 0 );
 			this.destroy();
 		};
 		libwebsocket.destroy = function() {
+			if (!this.user_data) return;
+			var user_data = this.user_data;
+			this.user_data = 0;
 			libwebsocket.sockets.set( this.id, undefined );
-			libwebsocket.on_event( this.protocol_id, ctx, this.id, 11, this.user_data, 0, 0 );
+			libwebsocket.on_event( this.protocol_id, ctx, this.id, 11, user_data, 0, 0 );
 		};
 
 		Module.__libwebsocket = libwebsocket;

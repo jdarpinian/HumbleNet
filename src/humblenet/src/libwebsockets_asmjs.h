@@ -1,4 +1,4 @@
-#ifndef EMSCRIPTEN
+#ifndef __EMSCRIPTEN__
 #error "This should only be used under emscripten"
 #endif
 

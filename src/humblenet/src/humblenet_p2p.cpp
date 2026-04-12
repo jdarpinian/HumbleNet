@@ -256,7 +256,7 @@ void internal_poll_io() {
 	humblenet_p2p_wait(0);
 }
 
-#ifndef EMSCRIPTEN
+#ifndef __EMSCRIPTEN__
 
 #include "libpoll.h"	// SKIP_AMALGAMATOR_INCLUDE
 

@@ -1,4 +1,4 @@
-#ifndef EMSCRIPTEN 
+#ifndef __EMSCRIPTEN__ 
 
 #ifdef _MSC_VER
 // silence warnings about sscanf
