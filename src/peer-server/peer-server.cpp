@@ -276,8 +276,6 @@ int callback_humblepeer(struct lws *wsi
 	return 0;
 }
 
-extern "C" struct lws_protocols acme_plugin_protocol;
-
 struct lws_protocols protocols_8080[] = {
 	  { "humblepeer", callback_humblepeer, 1 }
 	, { NULL, NULL, 0 }
@@ -285,7 +283,7 @@ struct lws_protocols protocols_8080[] = {
 
 struct lws_protocols protocols_443[] = {
 	  { "humblepeer", callback_humblepeer, 1 }
-	, acme_plugin_protocol
+	, lws_acme_client_protocols[0]
 
 	, { NULL, NULL, 0 }
 };
@@ -297,9 +295,12 @@ void help(const std::string& prog, const std::string& error = "")
 	}
 	std::cerr
 		<< "Humblenet peer match-making server\n"
-		<< " " << prog << "[-h] --email em@example.com --common-name test.example.com\n"
+		<< " " << prog << "[-h] [--port 8080] [--tls-port 443] [--acme-staging] --email em@example.com --common-name test.example.com\n"
 		<< "   --email Used to request SSL certificate from Let's Encrypt\n"
 		<< "   --common-name Domain name Let's Encrypt will ping during ACME and issue certs for\n"
+		<< "   --port HTTP / websocket listen port (default 8080)\n"
+		<< "   --tls-port HTTPS / WSS listen port (default 443)\n"
+		<< "   --acme-staging Use Let's Encrypt staging instead of production\n"
 		<< "   -h     Displays this help\n"
 		<< std::endl;
 }
@@ -317,6 +318,11 @@ int main(int argc, char *argv[]) {
 	char* turn_server = nullptr;
 	char* turn_username = nullptr;
 	char* turn_password = nullptr;
+	bool acme_staging = false;
+	int http_port = 8080;
+	int tls_port = 443;
+	bool http_port_overridden = false;
+	bool tls_port_overridden = false;
 	// Parse command line arguments
 	for (int i = 1; i < argc; ++i) {
 		std::string arg  = argv[i];
@@ -363,6 +369,26 @@ int main(int argc, char *argv[]) {
 				help(argv[0], "--TURN-password option requires an argument");
 				exit(2);
 			}
+		} else if (arg == "--port") {
+			++i;
+			if (i < argc) {
+				http_port = atoi(argv[i]);
+				http_port_overridden = true;
+			} else {
+				help(argv[0], "--port option requires an argument");
+				exit(2);
+			}
+		} else if (arg == "--tls-port") {
+			++i;
+			if (i < argc) {
+				tls_port = atoi(argv[i]);
+				tls_port_overridden = true;
+			} else {
+				help(argv[0], "--tls-port option requires an argument");
+				exit(2);
+			}
+		} else if (arg == "--acme-staging") {
+			acme_staging = true;
 		}
 	}
 
@@ -376,6 +402,10 @@ int main(int argc, char *argv[]) {
 			exit(2);
 		}
 	
+	}
+
+	if (email != nullptr && common_name != nullptr && !http_port_overridden) {
+		http_port = 80;
 	}
 
 	// logFileOpen("peer-server.log");
@@ -421,14 +451,16 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
-	info.port = 8080;
+	info.port = http_port;
 	info.vhost_name = "HTTP_8080_vhost";
 	struct lws_protocol_vhost_options pvo6 = {
 		NULL, NULL, "email", email
 	}, pvo5 = {
 		&pvo6, NULL, "common-name", common_name
 	}, pvo4 = {
-		&pvo5, NULL, "directory-url", "https://acme-v02.api.letsencrypt.org/directory" //"https://acme-staging-v02.api.letsencrypt.org/directory"
+		&pvo5, NULL, "directory-url", acme_staging ?
+			"https://acme-staging-v02.api.letsencrypt.org/directory" :
+			"https://acme-v02.api.letsencrypt.org/directory"
 	}, pvo3 = {
 		&pvo4, NULL, "auth-path", "./auth.jwk"
 	}, pvo2 = {
@@ -444,24 +476,24 @@ int main(int argc, char *argv[]) {
 	info.pvo = &pvo;
 	info.protocols = protocols_8080;
 
-	// struct lws_vhost *host_8080 = lws_create_vhost(peerServer->context, &info);
-	// if (host_8080 == NULL) {
-	// 	LOG_ERROR("Failed to create vhost for port 8080\n");
-	// 	exit(1);
-	// }
+	struct lws_vhost *host_8080 = lws_create_vhost(peerServer->context, &info);
+	if (host_8080 == NULL) {
+		LOG_ERROR("Failed to create vhost for port %d\n", http_port);
+		exit(1);
+	}
 
 	if (email == nullptr || common_name == nullptr) {
 		LOG_WARNING("--email or --common-name not specified, not starting TLS server\n");
 	} else {
 		info.protocols = protocols_443;
-		info.port = 443;
+		info.port = tls_port;
 		info.vhost_name = "SSL_vhost";
 		info.ssl_cert_filepath = "./peer-server.key.crt";
 		info.ssl_private_key_filepath = "./peer-server.key.pem";
 		info.options |= LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
 		struct lws_vhost *host_443 = lws_create_vhost(peerServer->context, &info);
 		if (host_443 == NULL) {
-			LOG_ERROR("Failed to create vhost for port 443\n");
+			LOG_ERROR("Failed to create vhost for port %d\n", tls_port);
 			exit(1);
 		}
 	}

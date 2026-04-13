@@ -37,7 +37,6 @@ Used during the build process by the APIBuilder tool.
 libwebsockets
 =============
 Licensed under a modified GNU LGPL 2.1 license that permits static linking.
-Slightly modified to support BoringSSL. [Patch](3rdparty/patches/websockets-boringssl.patch)
 Used for websocket communication on Desktop platforms.
 
 sha1
